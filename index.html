@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Cyberpunk Weather</title>
+<link rel="preconnect" href="https://images.unsplash.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Orbitron',sans-serif;
+}
+.forecast{
+    margin-top:20px;
+    display:flex;
+    gap:8px;
+    justify-content:space-between;
+}
+
+.day{
+    flex:1;
+    padding:10px;
+    border-radius:12px;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.1);
+    text-align:center;
+}
+
+.day h5{
+    font-size:12px;
+    color:#aaa;
+}
+
+.day p{
+    font-size:14px;
+    margin-top:5px;
+}
+body{
+    height:100vh;
+    overflow:hidden;
+    background:
+    linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.8)),
+    url('https://images.unsplash.com/photo-1519608487953-e999c86e7455?q=80&w=1974&auto=format&fit=crop');
+    background-size:cover;
+    background-position:center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+}
+
+/* ===== Animated Background Glow ===== */
+
+body::before{
+    content:'';
+    position:absolute;
+    width:600px;
+    height:600px;
+    background:#00fff7;
+    filter:blur(180px);
+    opacity:0.15;
+    animation:moveGlow 8s infinite alternate;
+}
+/* ===== MOBILE FIX ===== */
+@media (max-width: 768px) {
+
+    body {
+        transform: none; /* убираем масштаб, он ломает телефоны */
+        overflow: auto;
+        padding: 20px;
+    }
+
+    .card {
+        width: 95%;
+        max-width: 380px;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .title {
+        font-size: 22px;
+    }
+
+    .temp {
+        font-size: 48px;
+    }
+
+    .city {
+        font-size: 24px;
+    }
+
+    .weather {
+        font-size: 18px;
+    }
+
+    .details {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .detail-box {
+        width: 100%;
+    }
+
+    .search-box {
+        flex-direction: column;
+    }
+
+    .search-box input,
+    .search-box button {
+        width: 100%;
+    }
+
+    .forecast {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .day {
+        width: 100%;
+    }
+}
+@keyframes moveGlow{
+    from{
+        transform:translate(-150px,-100px);
+    }
+    to{
+        transform:translate(150px,100px);
+    }
+}
+
+/* ===== Rain ===== */
+
+.rain{
+    position:absolute;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    pointer-events:none;
+}
+
+.drop{
+    position:absolute;
+    bottom:100%;
+    width:2px;
+    height:80px;
+    background:linear-gradient(transparent,#00fff7);
+    animation:rain linear infinite;
+    opacity:0.5;
+}
+@keyframes fadeIn{
+
+    from{
+        opacity:0;
+        transform:
+        translateY(40px)
+        scale(0.9);
+    }
+
+    to{
+        opacity:1;
+        transform:
+        translateY(0)
+        scale(1);
+    }
+
+}
+.flash{
+
+    position:absolute;
+    width:100%;
+    height:100%;
+
+    background:white;
+
+    opacity:0;
+
+    pointer-events:none;
+
+    animation:flash 7s infinite;
+
+}
+
+@keyframes flash{
+
+    0%{
+        opacity:0;
+    }
+
+    1%{
+        opacity:0.8;
+    }
+
+    2%{
+        opacity:0;
+    }
+
+    8%{
+        opacity:0;
+    }
+
+    9%{
+        opacity:0.6;
+    }
+
+    10%{
+        opacity:0;
+    }
+
+}
+.music-btn{
+
+    margin-bottom:20px;
+
+    padding:10px 20px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#ff00ea;
+
+    color:white;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+    transition:0.3s;
+
+}
+body{
+    transform: scale(1.05);
+    transform-origin: center;
+}
+.music-btn:hover{
+
+    transform:scale(1.05);
+
+    box-shadow:
+    0 0 15px #ff00ea;
+
+}
+@keyframes rain{
+    to{
+        transform:translateY(120vh);
+    }
+}
+
+/* ===== Weather Card ===== */
+
+.card{
+    animation:fadeIn 1.5s ease;
+    position:relative;
+
+    width:420px; /* было 350 */
+    max-height:90vh;
+
+    padding:40px;
+
+    border-radius:28px;
+
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(18px);
+
+    border:1px solid rgba(255,255,255,0.15);
+
+    box-shadow:
+    0 0 25px rgba(0,255,247,0.35),
+    0 0 60px rgba(255,0,234,0.2);
+
+    text-align:center;
+    z-index:10;
+
+    overflow:auto; /* чтобы не ломалось */
+}
+/* ===== Title ===== */
+
+.title{
+    font-size:28px;
+    margin-bottom:20px;
+    color:#00fff7;
+
+    text-shadow:
+    0 0 10px #00fff7,
+    0 0 20px #00fff7;
+}
+
+/* ===== Search ===== */
+
+.search-box{
+    display:flex;
+    gap:10px;
+    margin-bottom:25px;
+}
+
+.search-box input{
+    flex:1;
+    padding:12px;
+    border:none;
+    outline:none;
+    border-radius:12px;
+
+    background:rgba(255,255,255,0.1);
+    color:white;
+
+    border:1px solid rgba(255,255,255,0.2);
+}
+
+.search-box button{
+    padding:12px 18px;
+    border:none;
+    border-radius:12px;
+
+    background:#00fff7;
+    color:black;
+    cursor:pointer;
+    font-weight:bold;
+
+    transition:0.3s;
+}
+
+.search-box button:hover{
+    transform:scale(1.05);
+
+    box-shadow:
+    0 0 10px #00fff7,
+    0 0 25px #00fff7;
+}
+
+/* ===== Weather Info ===== */
+
+.city{
+    font-size:32px;
+    margin-bottom:10px;
+}
+
+.temp{
+    font-size:70px;
+    font-weight:bold;
+
+    color:#ff00ea;
+
+    text-shadow:
+    0 0 15px #ff00ea,
+    0 0 35px #ff00ea;
+}
+
+.weather{
+    margin-top:10px;
+    font-size:22px;
+    color:#00fff7;
+}
+
+.details{
+    margin-top:25px;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.detail-box{
+    flex:1;
+
+    padding:15px;
+    border-radius:15px;
+
+    background:rgba(255,255,255,0.08);
+
+    border:1px solid rgba(255,255,255,0.1);
+}
+
+.detail-box h4{
+    font-size:12px;
+    margin-bottom:8px;
+    color:#aaa;
+}
+
+.detail-box p{
+    font-size:16px;
+    color:white;
+}
+
+/* ===== Responsive ===== */
+
+@media(max-width:450px){
+
+    .card{
+        width:90%;
+        padding:25px;
+    }
+
+    .temp{
+        font-size:55px;
+    }
+
+}
+
+</style>
+</head>
+<body>
+<div class="flash"></div>
+<!-- ===== Rain Effect ===== -->
+
+<div class="rain" id="rain"></div>
+
+<!-- ===== Weather Card ===== -->
+
+<div class="card">
+    <div class="forecast" id="forecast"></div>
+    <div class="title">CYBER WEATHER</div>
+    <button class="music-btn" onclick="toggleMusic()">
+    🎵 МУЗЫКА
+    </button>
+    <div class="search-box">
+        <input type="text" id="cityInput" placeholder="Введите город">
+        <button onclick="searchWeather()">ПОИСК</button>
+    </div>
+
+    <div class="city" id="city">Бишкек</div>
+
+    <div class="temp" id="temp">22°C</div>
+
+    <div class="weather" id="weather">Дождливая ночь</div>
+
+    <div class="details">
+        
+        <div class="detail-box">
+            <h4>ВЛАЖНОСТЬ</h4>
+            <p id="humidity">78%</p>
+        </div>
+
+        <div class="detail-box">
+            <h4>ВЕТЕР</h4>
+            <p id="wind">12 km/h</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const weatherTranslate = {
+    rain: "🌧 Дождь",
+    clear: "☀️ Ясно",
+    clouds: "☁️ Облачно",
+    snow: "❄️ Снег",
+    thunderstorm: "⚡ Гроза",
+    drizzle: "🌦 Морось"
+};
+function normalizeWeather(type){
+    return type.toLowerCase();
+}
+/* ===== Rain Generator ===== */
+let music;
+let playing = false;
+
+window.onload = function() {
+    music = document.getElementById('rainMusic');
+};
+function changeTheme(weather){
+
+    const body = document.body;
+
+    const img = new Image();
+
+    let url = "";
+
+    if(weather.toLowerCase().includes("rain")){
+        url = "https://images.unsplash.com/photo-1500674425229-f692875b0ab7";
+    }
+
+    else if(weather.toLowerCase().includes("clear")){
+        url = "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee";
+    }
+
+    else if(weather.toLowerCase().includes("cloud")){
+        url = "https://images.unsplash.com/photo-1527766833261-b09c3163a791";
+    }
+
+    else{
+        url = "https://images.unsplash.com/photo-1519608487953-e999c86e7455";
+    }
+
+    img.src = url;
+
+    img.onload = function(){
+
+        body.style.background =
+        `linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.85)), url('${url}')`;
+
+        body.style.backgroundSize = "cover";
+        body.style.backgroundPosition = "center";
+    }
+}
+
+function toggleMusic(){
+
+    if(!music){
+        alert("Audio not loaded");
+        return;
+    }
+
+    if(!playing){
+        music.play();
+        playing = true;
+    } else {
+        music.pause();
+        playing = false;
+    }
+}
+
+const rain = document.getElementById('rain');
+
+for(let i = 0; i < 150; i++){
+
+    let drop = document.createElement('div');
+
+    drop.classList.add('drop');
+
+    drop.style.left = Math.random() * 100 + 'vw';
+
+    drop.style.animationDuration =
+    (0.5 + Math.random()) + 's';
+
+    drop.style.opacity = Math.random();
+
+    drop.style.height =
+    (50 + Math.random() * 80) + 'px';
+
+    rain.appendChild(drop);
+
+}
+
+/* ===== Weather Search ===== */
+
+async function searchWeather(cityName){
+
+    const city =
+    cityName || document.getElementById('cityInput').value;
+
+    const apiKey = 'f78f9f68e76c55ba9a19e0cb555acec8';
+
+    const url =
+    `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${apiKey}`;
+
+    try{
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if(data.cod != "200"){
+            alert(data.message || 'API Error');
+            return;
+        }
+
+        // CURRENT WEATHER (первый элемент)
+        const current = data.list[0];
+        const weatherType = normalizeWeather(current.weather[0].main);
+        document.getElementById('city').innerText = data.city.name;
+        document.getElementById('temp').innerText = Math.round(current.main.temp) + '°C';
+        document.getElementById('weather').innerText = weatherTranslate[weatherType] || current.weather[0].main;
+        document.getElementById('humidity').innerText = current.main.humidity + '%';
+        document.getElementById('wind').innerText = current.wind.speed + ' km/h';
+
+        // ===== 5 DAY FORECAST =====
+        const forecastBox = document.getElementById('forecast');
+        forecastBox.innerHTML = '';
+
+        // берём каждые 8 записей = 24 часа
+        for(let i = 0; i < 5; i++){
+
+            const item = data.list[i * 8];
+
+            const date = new Date(item.dt_txt);
+            const day = date.toLocaleDateString('ru', { weekday: 'short' });
+
+            const div = document.createElement('div');
+            div.classList.add('day');
+
+            div.innerHTML = `
+                <h5>${day}</h5>
+                <p>${Math.round(item.main.temp)}°C</p>
+                <p>${weatherTranslate[normalizeWeather(item.weather[0].main)] || item.weather[0].main}</p>
+            `;
+
+            forecastBox.appendChild(div);
+        }
+            
+        // ===== CHANGE ANIMATION =====
+        changeTheme(current.weather[0].main);
+
+    }
+
+    catch(error){
+        console.log(error);
+        alert('API Error');
+    }
+}
+
+/* Auto Load */
+
+searchWeather('Bishkek');
+
+</script>
+<audio id="rainMusic" loop>
+    <source src="deti-online.com_-_tibetskaya-fleyta-i-penie-ptic.mp3" type="audio/mpeg">
+</audio>
+</body>
+</html>
